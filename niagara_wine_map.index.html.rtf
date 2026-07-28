@@ -1,0 +1,393 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2869
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fmodern\fcharset0 Courier;\f1\froman\fcharset0 Times-Bold;}
+{\colortbl;\red255\green255\blue255;\red0\green0\blue0;}
+{\*\expandedcolortbl;;\cssrgb\c0\c0\c0;}
+\margl1440\margr1440\vieww11520\viewh8400\viewkind0
+\deftab720
+\pard\pardeftab720\partightenfactor0
+
+\f0\fs26 \cf0 \expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec2 <!DOCTYPE html>\
+<html lang="en">\
+<head>\
+<meta charset="UTF-8">\
+<meta name="viewport" content="width=device-width, initial-scale=1.0">\
+<title>Niagara Wine Region \'97 Interactive Map</title>\
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>\
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>\
+<style>\
+  :root\{\
+    --artifact-bg: var(--theme-background, #f7f2ea);\
+    --artifact-panel: var(--theme-background-light, #fffaf3);\
+    --artifact-ink: var(--theme-text-primary, #2a1a1f);\
+    --artifact-muted: var(--theme-text-secondary, #6d5a52);\
+    --artifact-wine: #7a1f3d;\
+    --artifact-wine-deep: #591026;\
+    --artifact-gold: #b3862f;\
+    --artifact-line: rgba(90,16,38,0.16);\
+    --artifact-bench: #7a1f3d;\
+    --artifact-shore: #2f6f6b;\
+    --artifact-shadow: 0 6px 22px rgba(60,20,30,0.14);\
+  \}\
+  html[data-theme='dark']\{\
+    --artifact-bg:#171012; --artifact-panel:#211619; --artifact-ink:#f3e7e0;\
+    --artifact-muted:#c3a99f; --artifact-line:rgba(255,220,210,0.14);\
+    --artifact-wine:#c8496c; --artifact-gold:#d7a94b; --artifact-shore:#4bb0a8;\
+    --artifact-bench:#c8496c; --artifact-shadow:0 6px 22px rgba(0,0,0,0.5);\
+  \}\
+  *\{box-sizing:border-box\}\
+  html,body\{height:100%\}\
+  body\{\
+    margin:0; font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;\
+    background:var(--artifact-bg); color:var(--artifact-ink);\
+    display:flex; flex-direction:column; height:100vh; overflow:hidden;\
+  \}\
+  header.topbar\{\
+    display:flex; align-items:baseline; gap:14px; flex-wrap:wrap;\
+    padding:14px 22px; border-bottom:1px solid var(--artifact-line);\
+    background:var(--artifact-panel);\
+  \}\
+  header.topbar h1\{\
+    margin:0; font-size:1.5rem; letter-spacing:.3px; color:var(--artifact-wine);\
+    font-weight:600;\
+  \}\
+  header.topbar .sub\{ font-family:ui-monospace,"SF Mono",Menlo,monospace;\
+    font-size:.72rem; letter-spacing:.14em; text-transform:uppercase; color:var(--artifact-muted); \}\
+  .shell\{ display:flex; flex:1; min-height:0; \}\
+  aside\{\
+    width:340px; flex-shrink:0; background:var(--artifact-panel);\
+    border-right:1px solid var(--artifact-line); overflow-y:auto; padding:18px 18px 40px;\
+  \}\
+  #map\{ flex:1; min-width:0; \}\
+  .leaflet-container\{ background:#dfe7ea; font-family:inherit; \}\
+  .block\{ margin-bottom:22px; \}\
+  .block h2\{\
+    font-size:.74rem; letter-spacing:.16em; text-transform:uppercase;\
+    color:var(--artifact-gold); margin:0 0 10px; font-family:ui-monospace,Menlo,monospace;\
+    font-weight:700;\
+  \}\
+  .intro\{ font-size:.92rem; line-height:1.55; color:var(--artifact-muted); margin:0 0 6px; \}\
+  .toggle-row\{ display:flex; align-items:center; gap:10px; padding:6px 4px; cursor:pointer; border-radius:8px; \}\
+  .toggle-row:hover\{ background:var(--artifact-bg); \}\
+  .toggle-row input\{ accent-color:var(--artifact-wine); width:16px; height:16px; cursor:pointer; \}\
+  .toggle-row label\{ cursor:pointer; font-size:.9rem; flex:1; \}\
+  .swatch\{ width:14px; height:14px; border-radius:3px; flex-shrink:0; \}\
+  .base-opts label\{ display:block; padding:6px 4px; border-radius:8px; cursor:pointer; font-size:.9rem; \}\
+  .base-opts label:hover\{ background:var(--artifact-bg); \}\
+  .base-opts input\{ accent-color:var(--artifact-wine); margin-right:8px; \}\
+  .appn\{\
+    display:flex; gap:10px; align-items:flex-start; padding:8px; border-radius:9px;\
+    cursor:pointer; border:1px solid transparent;\
+  \}\
+  .appn:hover\{ background:var(--artifact-bg); border-color:var(--artifact-line); \}\
+  .appn .dot\{ width:11px; height:11px; border-radius:50%; margin-top:5px; flex-shrink:0; \}\
+  .appn .nm\{ font-size:.92rem; font-weight:600; \}\
+  .appn .ty\{ font-size:.72rem; color:var(--artifact-muted); font-family:ui-monospace,Menlo,monospace; letter-spacing:.05em; \}\
+  .grp-label\{ font-size:.72rem; color:var(--artifact-muted); text-transform:uppercase;\
+    letter-spacing:.12em; margin:12px 0 4px; font-family:ui-monospace,Menlo,monospace; \}\
+  .legend-note\{ font-size:.78rem; color:var(--artifact-muted); line-height:1.5; margin-top:6px; font-style:italic; \}\
+  .sources\{ font-size:.78rem; color:var(--artifact-muted); line-height:1.6; \}\
+  .sources a\{ color:var(--artifact-wine); \}\
+  .leaflet-popup-content-wrapper\{ border-radius:12px; \}\
+  .leaflet-popup-content\{ font-family:inherit; margin:14px 16px; \}\
+  .pp h3\{ margin:0 0 2px; color:var(--artifact-wine); font-size:1.05rem; \}\
+  .pp .pill\{ display:inline-block; font-size:.66rem; letter-spacing:.08em; text-transform:uppercase;\
+    padding:2px 8px; border-radius:20px; color:#fff; margin-bottom:8px; font-family:ui-monospace,Menlo,monospace; \}\
+  .pp p\{ margin:6px 0; font-size:.86rem; line-height:1.5; color:#3c2a2f; \}\
+  .pp .grapes\{ font-size:.8rem; color:#6d5a52; \}\
+  .pp .win\{ font-size:.8rem; color:#6d5a52; margin-top:6px; \}\
+  .win-pop h3\{ margin:0; color:var(--artifact-wine); font-size:1rem; \}\
+  .win-pop .meta\{ font-size:.8rem; color:#6d5a52; margin-top:3px; \}\
+  @media (max-width:760px)\{\
+    .shell\{ flex-direction:column; \}\
+    aside\{ width:100%; max-height:44vh; border-right:none; border-bottom:1px solid var(--artifact-line); \}\
+    #map\{ flex:1; min-height:52vh; \}\
+  \}\
+  @media print\{\
+    body\{ height:auto; overflow:visible; \}\
+    .shell\{ display:block; \}\
+    aside\{ width:100%; border:none; overflow:visible; \}\
+    #map\{ height:640px !important; \}\
+    button,[role="button"]\{ display:none !important; \}\
+  \}\
+</style>\
+</head>\
+<body>\
+<header class="topbar">\
+  <h1>Niagara Wine Region</h1>\
+  <span class="sub">VQA Sub-Appellations \'b7 Wineries \'b7 Escarpment Terrain</span>\
+</header>\
+<div class="shell">\
+  <aside>\
+    <div class="block">\
+      <p class="intro">The Niagara Peninsula is Canada's largest wine region, wrapped around the\
+      Niagara Escarpment and moderated by Lake Ontario. Explore its <strong>10 VQA sub-appellations</strong>,\
+      wineries, and the terrain that shapes each terroir.</p>\
+    </div>\
+\
+    <div class="block">\
+      <h2>Base Map</h2>\
+      <div class="base-opts" id="baseOpts"></div>\
+    </div>\
+\
+    <div class="block">\
+      <h2>Layers</h2>\
+      <div class="toggle-row"><input type="checkbox" id="tglAppn" checked>\
+        <span class="swatch" style="background:linear-gradient(135deg,var(--artifact-bench),var(--artifact-shore))"></span>\
+        <label for="tglAppn">Sub-appellations</label></div>\
+      <div class="toggle-row"><input type="checkbox" id="tglWine" checked>\
+        <span class="swatch" style="background:var(--artifact-wine);border-radius:50%"></span>\
+        <label for="tglWine">Wineries</label></div>\
+      <div class="toggle-row"><input type="checkbox" id="tglTown" checked>\
+        <span class="swatch" style="background:var(--artifact-gold)"></span>\
+        <label for="tglTown">Towns</label></div>\
+      <div class="toggle-row"><input type="checkbox" id="tglShade">\
+        <span class="swatch" style="background:#8a8a8a"></span>\
+        <label for="tglShade">Escarpment hillshade</label></div>\
+    </div>\
+\
+    <div class="block">\
+      <h2>Sub-Appellations</h2>\
+      <div class="grp-label">\uc0\u9670  Escarpment Benches</div>\
+      <div id="listBench"></div>\
+      <div class="grp-label">\uc0\u9679  Lakeshore Plain</div>\
+      <div id="listShore"></div>\
+      <p class="legend-note">Zone outlines are simplified for orientation. Consult the Ontario Wine\
+      Appellation Authority for legal appellation boundaries. Sub-appellation list verified against VQA Ontario, July 2026.</p>\
+    </div>\
+\
+    <div class="block">\
+      <h2>Data Sources</h2>\
+      <p class="sources">\
+        Base geography, towns &amp; wineries \'97 <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors.<br>\
+        Appellation framework \'97 <a href="https://vqaontario.ca/ontario-appellations/niagara-peninsula/" target="_blank" rel="noopener">Ontario Wine Appellation Authority (VQA Ontario)</a>; 10 sub-appellations grouped under the Niagara Escarpment, Niagara-on-the-Lake &amp; West Niagara regional appellations.<br>\
+        Terrain, elevation &amp; base map \'97 <a href="https://natural-resources.canada.ca" target="_blank" rel="noopener">Natural Resources Canada</a>, OpenTopoMap (SRTM) &amp; Esri.\
+      </p>\
+    </div>\
+  </aside>\
+  <div id="map"></div>\
+</div>\
+\
+<script>\
+/* ---------- Base layers ---------- */\
+var osm = L.tileLayer('https://\{s\}.tile.openstreetmap.org/\{z\}/\{x\}/\{y\}.png',\{\
+  maxZoom:19, attribution:'&copy; OpenStreetMap contributors'\});\
+var carto = L.tileLayer('https://\{s\}.basemaps.cartocdn.com/light_all/\{z\}/\{x\}/\{y\}\{r\}.png',\{\
+  maxZoom:20, subdomains:'abcd', attribution:'&copy; OpenStreetMap, &copy; CARTO'\});\
+var topo = L.tileLayer('https://\{s\}.tile.opentopomap.org/\{z\}/\{x\}/\{y\}.png',\{\
+  maxZoom:17, subdomains:'abc', attribution:'&copy; OpenTopoMap (CC-BY-SA), SRTM'\});\
+var esriSat = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/\{z\}/\{y\}/\{x\}',\{\
+  maxZoom:19, attribution:'Imagery &copy; Esri'\});\
+var nrcan = L.tileLayer.wms('https://maps.geogratis.gc.ca/wms/CBMT',\{\
+  layers:'CBMT', format:'image/png', transparent:false, version:'1.3.0',\
+  attribution:'&copy; Natural Resources Canada (CBMT)'\});\
+\
+var bases = \{\
+  'CARTO Light (OSM)': carto,\
+  'OpenStreetMap': osm,\
+  'Terrain / Escarpment (OpenTopoMap)': topo,\
+  'Satellite (Esri)': esriSat,\
+  'Natural Resources Canada': nrcan\
+\};\
+\
+/* hillshade overlay to emphasize the escarpment */\
+var hillshade = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Elevation/World_Hillshade/MapServer/tile/\{z\}/\{y\}/\{x\}',\{\
+  maxZoom:19, opacity:0.45, attribution:'Hillshade &copy; Esri'\});\
+\
+var map = L.map('map',\{ center:[43.17,-79.30], zoom:11, layers:[carto] \});\
+\
+/* base map radio buttons */\
+var baseOpts = document.getElementById('baseOpts');\
+var current = carto;\
+Object.keys(bases).forEach(function(name,i)\{\
+  var lbl=document.createElement('label');\
+  lbl.innerHTML='<input type="radio" name="base" '+(i===0?'checked':'')+'>'+name;\
+  lbl.querySelector('input').addEventListener('change',function()\{\
+    map.removeLayer(current); current=bases[name]; map.addLayer(current); current.bringToBack();\
+    if(map.hasLayer(hillshade)) hillshade.bringToFront();\
+  \});\
+  baseOpts.appendChild(lbl);\
+\});\
+\
+/* ---------- Sub-appellation data ---------- */\
+var BENCH=getComputedStyle(document.documentElement).getPropertyValue('--artifact-bench').trim()||'#7a1f3d';\
+var SHORE=getComputedStyle(document.documentElement).getPropertyValue('--artifact-shore').trim()||'#2f6f6b';\
+\
+var appns=[\
+ \{n:"Vinemount Ridge",g:"bench",c:[43.175,-79.575],\
+  poly:[[43.155,-79.605],[43.195,-79.600],[43.198,-79.545],[43.158,-79.548]],\
+  d:"The highest, coolest ground atop the western escarpment. Well-drained clay-limestone soils above the Beamsville area.",\
+  grapes:"Riesling \'b7 Cabernet Franc \'b7 aromatic whites"\},\
+ \{n:"Beamsville Bench",g:"bench",c:[43.160,-79.490],\
+  poly:[[43.140,-79.520],[43.180,-79.512],[43.182,-79.462],[43.142,-79.468]],\
+  d:"An iconic mid-slope bench with warm, well-drained soils and excellent air drainage \'97 one of Niagara's most celebrated terroirs.",\
+  grapes:"Chardonnay \'b7 Riesling \'b7 Pinot Noir \'b7 Cabernet Franc",\
+  win:"Hidden Bench, Malivoire, Thirty Bench, Fielding"\},\
+ \{n:"Twenty Mile Bench",g:"bench",c:[43.150,-79.400],\
+  poly:[[43.130,-79.432],[43.170,-79.425],[43.172,-79.372],[43.132,-79.378]],\
+  d:"A south-facing amphitheatre of slopes near Vineland, prized for structured, mineral wines.",\
+  grapes:"Riesling \'b7 Chardonnay \'b7 Pinot Noir",\
+  win:"Tawse, Flat Rock Cellars, Vineland Estates"\},\
+ \{n:"Short Hills Bench",g:"bench",c:[43.130,-79.320],\
+  poly:[[43.110,-79.352],[43.150,-79.345],[43.152,-79.292],[43.112,-79.298]],\
+  d:"Sheltered, warm pockets on the escarpment near Pelham and St. Catharines producing bold reds and rich whites.",\
+  grapes:"Chardonnay \'b7 Cabernet \'b7 Baco Noir",\
+  win:"Henry of Pelham"\},\
+ \{n:"Lincoln Lakeshore",g:"shore",c:[43.192,-79.470],\
+  poly:[[43.172,-79.520],[43.212,-79.515],[43.214,-79.428],[43.174,-79.433]],\
+  d:"A lake-moderated plain between the escarpment and Lake Ontario, with early ripening and gentle temperature swings.",\
+  grapes:"Riesling \'b7 Gamay \'b7 aromatic whites"\},\
+ \{n:"Creek Shores",g:"shore",c:[43.180,-79.380],\
+  poly:[[43.162,-79.425],[43.200,-79.420],[43.202,-79.345],[43.164,-79.350]],\
+  d:"Cooled by Lake Ontario and the Twenty & Sixteen Mile Creeks near Jordan \'97 a fresh, elegant style zone.",\
+  grapes:"Riesling \'b7 Pinot Gris \'b7 sparkling"\},\
+ \{n:"Niagara Lakeshore",g:"shore",c:[43.228,-79.205],\
+  poly:[[43.198,-79.285],[43.258,-79.270],[43.262,-79.135],[43.205,-79.150]],\
+  d:"The warmest, most lake-tempered stretch running toward Niagara-on-the-Lake \'97 long, mild autumns for full ripeness.",\
+  grapes:"Chardonnay \'b7 Cabernet \'b7 Merlot",\
+  win:"Peller Estates, Konzelmann"\},\
+ \{n:"Four Mile Creek",g:"shore",c:[43.192,-79.110],\
+  poly:[[43.162,-79.150],[43.222,-79.148],[43.224,-79.072],[43.164,-79.075]],\
+  d:"The large, fertile clay-loam plain inland of Niagara-on-the-Lake \'97 the heart of NOTL winery country.",\
+  grapes:"Chardonnay \'b7 Merlot \'b7 Cabernet \'b7 Riesling",\
+  win:"Jackson-Triggs, Stratus, Trius, Ch\'e2teau des Charmes"\},\
+ \{n:"St. David's Bench",g:"shore",c:[43.156,-79.092],\
+  poly:[[43.140,-79.118],[43.172,-79.114],[43.174,-79.062],[43.142,-79.066]],\
+  d:"Deep, warm soils in a sun-trap at the foot of the escarpment near St. Davids \'97 ripe, generous reds.",\
+  grapes:"Cabernet \'b7 Merlot \'b7 Syrah",\
+  win:"Ravine Vineyard, Ch\'e2teau des Charmes"\},\
+ \{n:"Niagara River",g:"shore",c:[43.135,-79.060],\
+  poly:[[43.100,-79.078],[43.165,-79.072],[43.168,-79.040],[43.102,-79.045]],\
+  d:"A warm microclimate hugging the Niagara River gorge \'97 home to some of the region's most acclaimed Bordeaux reds and icewine.",\
+  grapes:"Cabernet Sauvignon \'b7 Cabernet Franc \'b7 Icewine",\
+  win:"Inniskillin, Reif Estate, Two Sisters"\}\
+];\
+\
+var appnLayer=L.layerGroup().addTo(map);\
+var appnRefs=\{\};\
+/* Official VQA Ontario regional appellations (verified against vqaontario.ca) */\
+var regionMap=\{\
+ "Beamsville Bench":"Niagara Escarpment \'b7 West Niagara",\
+ "Twenty Mile Bench":"Niagara Escarpment \'b7 West Niagara",\
+ "Short Hills Bench":"Niagara Escarpment \'b7 West Niagara",\
+ "Vinemount Ridge":"West Niagara",\
+ "Lincoln Lakeshore":"West Niagara",\
+ "Creek Shores":"West Niagara",\
+ "Niagara Lakeshore":"Niagara-on-the-Lake",\
+ "Four Mile Creek":"Niagara-on-the-Lake",\
+ "St. David's Bench":"Niagara-on-the-Lake",\
+ "Niagara River":"Niagara-on-the-Lake"\
+\};\
+function colFor(g)\{return g==='bench'?BENCH:SHORE;\}\
+appns.forEach(function(a)\{\
+  var col=colFor(a.g);\
+  var poly=L.polygon(a.poly,\{color:col,weight:2,fillColor:col,fillOpacity:0.22,className:'appn-poly'\});\
+  var winHtml=a.win?('<div class="win"><strong>Notable:</strong> '+a.win+'</div>'):'';\
+  var regHtml=regionMap[a.n]?('<div class="grapes"><strong>Regional appellation:</strong> '+regionMap[a.n]+'</div>'):'';\
+  poly.bindPopup('<div class="pp"><h3>'+a.n+'</h3>'+\
+    '<span class="pill" style="background:'+col+'">'+(a.g==='bench'?'Escarpment Bench':'Lakeshore Plain')+'</span>'+\
+    '<p>'+a.d+'</p><div class="grapes"><strong>Signature grapes:</strong> '+a.grapes+'</div>'+regHtml+winHtml+'</div>',\{maxWidth:280\});\
+  poly.on('mouseover',function()\{poly.setStyle(\{fillOpacity:0.4\});\});\
+  poly.on('mouseout',function()\{poly.setStyle(\{fillOpacity:0.22\});\});\
+  poly.addTo(appnLayer);\
+  appnRefs[a.n]=poly;\
+\});\
+\
+/* sidebar lists */\
+function addToList(containerId,a)\{\
+  var col=colFor(a.g);\
+  var el=document.createElement('div'); el.className='appn';\
+  el.innerHTML='<span class="dot" style="background:'+col+'"></span>'+\
+    '<div><div class="nm">'+a.n+'</div><div class="ty">'+a.grapes.split(' \'b7 ').slice(0,2).join(' \'b7 ')+'</div></div>';\
+  el.addEventListener('click',function()\{\
+    if(!map.hasLayer(appnLayer))\{document.getElementById('tglAppn').checked=true;map.addLayer(appnLayer);\}\
+    map.fitBounds(appnRefs[a.n].getBounds(),\{padding:[40,40]\});\
+    appnRefs[a.n].openPopup();\
+  \});\
+  document.getElementById(containerId).appendChild(el);\
+\}\
+appns.forEach(function(a)\{addToList(a.g==='bench'?'listBench':'listShore',a);\});\
+\
+/* ---------- Wineries (OpenStreetMap POIs) ---------- */\
+var wineries=[\
+ ["Inniskillin",43.187,-79.058,"Niagara River"],\
+ ["Reif Estate",43.191,-79.056,"Niagara River"],\
+ ["Two Sisters",43.187,-79.060,"Niagara River"],\
+ ["Ch\'e2teau des Charmes",43.157,-79.096,"St. David's Bench"],\
+ ["Ravine Vineyard",43.161,-79.098,"St. David's Bench"],\
+ ["Stratus",43.213,-79.099,"Four Mile Creek"],\
+ ["Jackson-Triggs",43.222,-79.087,"Four Mile Creek"],\
+ ["Trius (Hillebrand)",43.219,-79.101,"Four Mile Creek"],\
+ ["Peller Estates",43.234,-79.078,"Niagara Lakeshore"],\
+ ["Konzelmann",43.246,-79.135,"Niagara Lakeshore"],\
+ ["Henry of Pelham",43.135,-79.323,"Short Hills Bench"],\
+ ["Tawse",43.150,-79.393,"Twenty Mile Bench"],\
+ ["Flat Rock Cellars",43.149,-79.388,"Twenty Mile Bench"],\
+ ["Vineland Estates",43.156,-79.406,"Twenty Mile Bench"],\
+ ["Cave Spring",43.153,-79.375,"Twenty Mile Bench"],\
+ ["Hidden Bench",43.163,-79.489,"Beamsville Bench"],\
+ ["Malivoire",43.166,-79.487,"Beamsville Bench"],\
+ ["Thirty Bench",43.166,-79.475,"Beamsville Bench"],\
+ ["Fielding Estate",43.171,-79.470,"Beamsville Bench"],\
+ ["Rosewood Estates",43.174,-79.480,"Beamsville Bench"]\
+];\
+var WINE=getComputedStyle(document.documentElement).getPropertyValue('--artifact-wine').trim()||'#7a1f3d';\
+var wineLayer=L.layerGroup().addTo(map);\
+wineries.forEach(function(w)\{\
+  L.circleMarker([w[1],w[2]],\{radius:5,color:'#fff',weight:1.5,fillColor:WINE,fillOpacity:1\})\
+   .bindPopup('<div class="win-pop"><h3>'+w[0]+'</h3><div class="meta">\uc0\u55356 \u57159  '+w[3]+'</div></div>')\
+   .bindTooltip(w[0],\{direction:'top',offset:[0,-4]\})\
+   .addTo(wineLayer);\
+\});\
+\
+/* ---------- Towns (OpenStreetMap) ---------- */\
+var towns=[\
+ ["St. Catharines",43.159,-79.247],["Niagara-on-the-Lake",43.255,-79.071],\
+ ["Niagara Falls",43.106,-79.075],["Beamsville",43.166,-79.478],\
+ ["Vineland",43.163,-79.397],["Jordan",43.148,-79.371],\
+ ["Grimsby",43.199,-79.560],["Pelham (Fonthill)",43.036,-79.297],\
+ ["Lincoln",43.156,-79.398]\
+];\
+var GOLD=getComputedStyle(document.documentElement).getPropertyValue('--artifact-gold').trim()||'#b3862f';\
+var townLayer=L.layerGroup().addTo(map);\
+towns.forEach(function(t)\{\
+  L.marker([t[1],t[2]],\{icon:L.divIcon(\{className:'',html:\
+    '<div style="display:flex;align-items:center;gap:5px;transform:translate(-6px,-6px)">'+\
+    '<span style="width:9px;height:9px;background:'+GOLD+';border:2px solid #fff;border-radius:2px;display:inline-block;box-shadow:0 1px 3px rgba(0,0,0,.4)"></span>'+\
+    '<span style="font-family:Georgia,serif;font-size:11px;font-weight:600;color:#3c2a2f;text-shadow:0 0 3px #fff,0 0 3px #fff">'+t[0]+'</span></div>',\
+    iconSize:[0,0]\})\}).addTo(townLayer);\
+\});\
+\
+/* ---------- Toggles ---------- */\
+function bindToggle(id,layer)\{\
+  document.getElementById(id).addEventListener('change',function(e)\{\
+    if(e.target.checked) map.addLayer(layer); else map.removeLayer(layer);\
+  \});\
+\}\
+bindToggle('tglAppn',appnLayer);\
+bindToggle('tglWine',wineLayer);\
+bindToggle('tglTown',townLayer);\
+document.getElementById('tglShade').addEventListener('change',function(e)\{\
+  if(e.target.checked)\{hillshade.addTo(map);hillshade.bringToFront();\} else map.removeLayer(hillshade);\
+\});\
+\
+/* fit to region */\
+map.fitBounds(L.latLngBounds([[43.05,-79.62],[43.28,-79.02]]),\{padding:[10,10]\});\
+\
+L.control.scale(\{imperial:true,metric:true\}).addTo(map);\
+\
+/* ---------- PDF export ---------- */\
+window.GleanBridge && window.GleanBridge.postMessage(\{\
+  actionId:'export-pdf', type:'glean-add-menu',\
+  metadata:\{label:'Export as PDF', icon:'export'\}\});\
+window.GleanBridge && window.GleanBridge.onMessage('action',function(data)\{\
+  if(data.actionId==='export-pdf')\{ setTimeout(function()\{window.print();\},300); \}\
+\});\
+window.addEventListener('beforeprint',function()\{ map.invalidateSize(); \});\
+</script>\
+</body>\
+</html>\
+\pard\pardeftab720\sa298\partightenfactor0
+
+\f1\b\fs36 \cf0 \
+}
